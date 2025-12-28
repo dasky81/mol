@@ -76,21 +76,21 @@
       .shake-screen { animation: none !important; }
     }
 
-    /* --- Earthquake (kept, but controlled via intensity class) --- */
+    /* --- Earthquake (Optimized) --- */
     @keyframes earthquake {
       0% { transform: translate(1px, 1px) rotate(0deg); }
-      10% { transform: translate(-1px, -2px) rotate(-0.4deg); }
-      20% { transform: translate(-2px, 0px) rotate(0.4deg); }
+      10% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+      20% { transform: translate(-2px, 0px) rotate(0.5deg); }
       30% { transform: translate(2px, 1px) rotate(0deg); }
-      40% { transform: translate(1px, -1px) rotate(0.4deg); }
-      50% { transform: translate(-1px, 1px) rotate(-0.4deg); }
+      40% { transform: translate(1px, -1px) rotate(0.5deg); }
+      50% { transform: translate(-1px, 1px) rotate(-0.5deg); }
       60% { transform: translate(-2px, 1px) rotate(0deg); }
-      70% { transform: translate(2px, 1px) rotate(-0.4deg); }
-      80% { transform: translate(-1px, -1px) rotate(0.4deg); }
+      70% { transform: translate(2px, 1px) rotate(-0.5deg); }
+      80% { transform: translate(-1px, -1px) rotate(0.5deg); }
       90% { transform: translate(1px, 1px) rotate(0deg); }
-      100% { transform: translate(1px, -2px) rotate(-0.4deg); }
+      100% { transform: translate(1px, -2px) rotate(-0.5deg); }
     }
-    .shake-screen { animation: earthquake 0.35s infinite; will-change: transform; }
+    .shake-screen { animation: earthquake 0.3s infinite; will-change: transform; }
 
     /* --- Input --- */
     .input-ritual {
@@ -115,7 +115,7 @@
       opacity: 0.6;
     }
 
-    /* --- Owl: breathing + micro-tilt + eye glow + "smoke" ring --- */
+    /* --- Owl Animations --- */
     @keyframes owlBreath {
       0%, 100% { transform: translateY(0) scale(1); }
       50% { transform: translateY(-2px) scale(1.01); }
@@ -131,9 +131,14 @@
       will-change: transform, box-shadow;
     }
     .owl-tilt { animation: owlTilt 8s ease-in-out infinite; }
+    
+    /* Subtle pulse when typing */
+    .owl-reading {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+    }
 
     /* Eye Colors */
-    .eye-base { transition: fill 1.2s ease, filter 1.2s ease, transform 1.2s ease; transform-origin: center; }
+    .eye-base { transition: fill 1.2s ease, filter 1.2s ease, transform 0.2s ease; transform-origin: center; }
     .eyes-red { fill: var(--red); filter: drop-shadow(0 0 16px rgba(239,68,68,0.95)); }
     .eyes-gold { fill: var(--amber); filter: drop-shadow(0 0 16px rgba(245,158,11,0.85)); }
     .eyes-dark { fill: #44403c; filter: drop-shadow(0 0 2px #000); }
@@ -244,11 +249,9 @@
       position: absolute;
       bottom: -34px;
       width: 44px; height: 44px;
-      /* Più "fiamma": core caldo + alone + fumo scuro */
       background:
         radial-gradient(circle at 50% 65%, rgba(255, 200, 120, 0.34) 0%, rgba(245,158,11,0.22) 22%, rgba(220,38,38,0.42) 48%, rgba(0,0,0,0) 72%),
         radial-gradient(circle at 50% 80%, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0) 70%);
-      /* Teardrop-ish */
       border-radius: 999px 999px 999px 999px / 900px 900px 1400px 1400px;
       opacity: 0;
       animation: rise 4.8s infinite ease-in;
@@ -286,10 +289,6 @@
       0%, 100% { transform: translateY(0) scaleY(1) rotate(-1.2deg); opacity: 0.18; }
       35% { transform: translateY(-14px) scaleY(1.06) rotate(1.2deg); opacity: 0.28; }
       70% { transform: translateY(-8px) scaleY(1.03) rotate(-0.6deg); opacity: 0.22; }
-    }
-      20% { opacity: 0.45; }
-      55% { opacity: 0.68; transform: translateY(-120px) scale(1.45) translateX(10px); }
-      100% { opacity: 0; transform: translateY(-360px) scale(0.5) translateX(-12px); }
     }
 
     /* heat haze */
@@ -356,7 +355,7 @@
 
 <body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-red-900 selection:text-white">
 
-  <!-- Canvas Embers (optional but tasty) -->
+  <!-- Canvas Embers -->
   <canvas id="emberCanvas" aria-hidden="true"></canvas>
 
   <!-- FIRE BACKGROUND -->
@@ -366,7 +365,7 @@
     <!-- Particles injected by JS -->
   </div>
 
-  <!-- Vignette / ambient -->
+  <!-- Vignette -->
   <div class="vignette" aria-hidden="true"></div>
 
   <!-- MAIN WRAPPER -->
@@ -460,9 +459,9 @@
       </div>
 
       <!-- Log / Output -->
-      <div class="terminal-bg p-4 md:p-6 font-serif italic text-sm leading-7 h-40 md:h-48 overflow-y-auto custom-scrollbar text-center text-stone-500 scroll-smooth" id="consoleLog" role="log" aria-live="polite" aria-relevant="additions">
+      <div class="terminal-bg p-4 md:p-6 h-40 md:h-48 overflow-y-auto custom-scrollbar text-center text-stone-500 scroll-smooth" id="consoleLog" role="log" aria-live="polite" aria-relevant="additions">
         <div class="opacity-30 mt-10 md:mt-12 flex flex-col gap-2" id="idleHint">
-          <span>~ Attesa del Sacrificio ~</span>
+          <span class="font-serif italic text-sm">~ Attesa del Sacrificio ~</span>
         </div>
       </div>
     </main>
@@ -490,44 +489,41 @@
 
       const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+      // OWL REACTIVITY (Eye Tracking Simulation)
+      input.addEventListener('input', () => {
+         eyeLeft.style.transform = `scale(${1 + Math.random()*0.1})`;
+         eyeRight.style.transform = `scale(${1 + Math.random()*0.1})`;
+         owlContainer.classList.add('owl-reading');
+         clearTimeout(window.owlTimer);
+         window.owlTimer = setTimeout(() => {
+             eyeLeft.style.transform = 'scale(1)';
+             eyeRight.style.transform = 'scale(1)';
+             owlContainer.classList.remove('owl-reading');
+         }, 500);
+      });
+
       // ---- FIRE PARTICLES (CSS layer) ----
       function createFireParticles() {
         if (!fireContainer || prefersReduced) return;
         const isMobile = window.innerWidth < 768;
-
-        // Particelle (scintille/fiamme piccole)
         const count = isMobile ? 20 : 38;
         const frag = document.createDocumentFragment();
 
         for (let i = 0; i < count; i++) {
           const p = document.createElement('div');
           p.className = 'fire-particle';
-
           const left = Math.random() * 100;
           const size = 16 + Math.random() * (isMobile ? 34 : 58);
           const delay = Math.random() * 5.2;
           const dur = 3.2 + Math.random() * 4.6;
-
           p.style.left = left.toFixed(2) + '%';
           p.style.width = size.toFixed(0) + 'px';
           p.style.height = size.toFixed(0) + 'px';
           p.style.animationDelay = delay.toFixed(2) + 's';
           p.style.animationDuration = dur.toFixed(2) + 's';
-
-          // Varianza: alcune più "calde" (più gialle) e altre più rosse
-          const r = Math.random();
-          if (r > 0.78) {
-            p.style.filter = 'blur(8px) saturate(1.35)';
-          } else if (r > 0.45) {
-            p.style.filter = 'blur(10px) saturate(1.15)';
-          } else {
-            p.style.filter = 'blur(11px) saturate(1.05)';
-          }
-
           frag.appendChild(p);
         }
 
-        // Lingue di fuoco (macro layer)
         const tongues = isMobile ? 3 : 5;
         for (let i = 0; i < tongues; i++) {
           const t = document.createElement('div');
@@ -535,7 +531,6 @@
           t.style.left = (10 + Math.random() * 80).toFixed(2) + '%';
           t.style.animationDelay = (Math.random() * 1.8).toFixed(2) + 's';
           t.style.animationDuration = (3.0 + Math.random() * 2.6).toFixed(2) + 's';
-          t.style.opacity = (0.16 + Math.random() * 0.14).toFixed(2);
           frag.appendChild(t);
         }
 
@@ -543,11 +538,10 @@
       }
       createFireParticles();
 
-      // ---- EMBERS CANVAS (volumetric-ish embers) ----
+      // ---- EMBERS CANVAS ----
       const canvas = document.getElementById('emberCanvas');
       const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
       let embers = [];
-      let rafId = null;
 
       function resizeCanvas() {
         if (!canvas || !ctx) return;
@@ -562,34 +556,26 @@
       function spawnEmber() {
         const w = window.innerWidth;
         const h = window.innerHeight;
-        // spawn from bottom third
         const x = Math.random() * w;
-        const y = h - (Math.random() * (h * 0.22));
+        const y = h + 10;
         const vy = - (0.6 + Math.random() * 1.6);
         const vx = (Math.random() - 0.5) * 0.7;
         const r = 0.6 + Math.random() * 1.8;
         const life = 140 + Math.random() * 160;
         const hueRoll = Math.random();
         const color = hueRoll > 0.7 ? 'rgba(251,191,36,' : (hueRoll > 0.4 ? 'rgba(245,158,11,' : 'rgba(220,38,38,');
-
         embers.push({ x, y, vx, vy, r, life, max: life, color, drift: (Math.random() - 0.5) * 0.25 });
       }
 
       function stepEmbers() {
         if (!canvas || !ctx || prefersReduced) return;
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-        // softly darken for trails
-        ctx.fillStyle = 'rgba(0,0,0,0.15)';
-        ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-        // spawn rate
+        
         const isMobile = window.innerWidth < 768;
-        const spawnN = isMobile ? 2 : 4;
-        for (let i = 0; i < spawnN; i++) spawnEmber();
+        const spawnN = isMobile ? 1 : 2;
+        if(Math.random() > 0.5) { for (let i = 0; i < spawnN; i++) spawnEmber(); }
 
         embers = embers.filter(e => e.life > 0);
-
         for (const e of embers) {
           e.life -= 1;
           const t = e.life / e.max;
@@ -597,98 +583,34 @@
           e.x += e.vx;
           e.y += e.vy;
           e.vy *= 0.995;
-          e.r *= 0.999;
-
           const alpha = Math.max(0, Math.min(0.85, t));
           ctx.beginPath();
           ctx.fillStyle = e.color + alpha.toFixed(3) + ')';
-          ctx.shadowColor = e.color + Math.min(0.6, alpha).toFixed(3) + ')';
-          ctx.shadowBlur = 12;
           ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
           ctx.fill();
         }
-
-        rafId = requestAnimationFrame(stepEmbers);
+        requestAnimationFrame(stepEmbers);
       }
 
       if (canvas && ctx && !prefersReduced) {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas, { passive: true });
-        // pre-fill
-        ctx.fillStyle = 'rgba(0,0,0,1)';
-        ctx.fillRect(0,0,window.innerWidth, window.innerHeight);
         stepEmbers();
       }
 
-      // ---- AI POETRY GENERATOR (same vibe, slightly tighter) ----
+      // ---- VOCABULARY ----
       const vocab = {
         bless: {
-          openers: [
-            "Sotto l'ala del Gufo Eterno,",
-            "Dalle ceneri del bosco sacro,",
-            "Tra i rami antichi che toccano il cielo,",
-            "Quando l'alba bacia la rugiada,",
-            "Oltre il velo della notte oscura,",
-            "Nel respiro della terra madre,"
-          ],
-          actions: [
-            "la luce dorata discende piano.",
-            "il vento porta antiche promesse.",
-            "si apre un sentiero di stelle.",
-            "la linfa scorre nuova e forte.",
-            "gli spiriti benevoli si radunano.",
-            "il fuoco purificatore danza."
-          ],
-          effects: [
-            "Che la fortuna ti sia compagna,",
-            "Ogni passo diventi una danza,",
-            "Il peso del mondo svanisce ora,",
-            "La saggezza guidi il tuo cuore,",
-            "L'abbondanza fiorisca al tuo tocco,",
-            "Ogni ombra diventi rifugio,"
-          ],
-          closers: [
-            "e la pace trovi la tua dimora.",
-            "verso un domani che splende d'oro.",
-            "sotto il manto della grande quercia.",
-            "sigillato nel patto della luce.",
-            "finché il sole non tramonterà più.",
-            "custodito dal sacro fuoco."
-          ]
+          openers: [ "Sotto l'ala del Gufo Eterno,", "Dalle ceneri del bosco sacro,", "Tra i rami antichi che toccano il cielo,", "Quando l'alba bacia la rugiada,", "Oltre il velo della notte oscura," ],
+          actions: [ "la luce dorata discende piano.", "il vento porta antiche promesse.", "si apre un sentiero di stelle.", "la linfa scorre nuova e forte.", "gli spiriti benevoli si radunano." ],
+          effects: [ "Che la fortuna ti sia compagna,", "Ogni passo diventi una danza,", "Il peso del mondo svanisce ora,", "La saggezza guidi il tuo cuore,", "L'abbondanza fiorisca al tuo tocco," ],
+          closers: [ "e la pace trovi la tua dimora.", "verso un domani che splende d'oro.", "sotto il manto della grande quercia.", "sigillato nel patto della luce.", "custodito dal sacro fuoco." ]
         },
         curse: {
-          openers: [
-            "Nel vuoto dove il Moloch attende,",
-            "Sotto la terra fredda e spoglia,",
-            "Quando la luna si tinge di sangue,",
-            "Dalle profondità del bosco cieco,",
-            "Al rintocco dell'ora tredicesima,",
-            "Dove le radici bevono veleno,"
-          ],
-          actions: [
-            "l'ombra si allunga e ti avvolge.",
-            "il fuoco brucia ogni speranza.",
-            "un gelido vento chiama il tuo nome.",
-            "gli spettri ridono nel buio.",
-            "il sentiero si chiude per sempre.",
-            "la cenere copre ogni traccia."
-          ],
-          effects: [
-            "Che il sonno ti sia per sempre negato,",
-            "Ogni strada diventi un labirinto,",
-            "Il peso del giudizio ti schiacci,",
-            "La sfortuna sia la tua unica ombra,",
-            "Il tuo nome sia sussurrato con timore,",
-            "Ogni porta ti sia sbarrata,"
-          ],
-          closers: [
-            "finché il debito non sarà pagato.",
-            "nel silenzio eterno della notte.",
-            "senza riparo dal nostro sguardo.",
-            "sigillato nel patto della cenere.",
-            "incatenato al destino che hai scelto.",
-            "sotto l'occhio che tutto vede."
-          ]
+          openers: [ "Nel vuoto dove il Moloch attende,", "Sotto la terra fredda e spoglia,", "Quando la luna si tinge di sangue,", "Dalle profondità del bosco cieco,", "Al rintocco dell'ora tredicesima," ],
+          actions: [ "l'ombra si allunga e ti avvolge.", "il fuoco brucia ogni speranza.", "un gelido vento chiama il tuo nome.", "gli spettri ridono nel buio.", "il sentiero si chiude per sempre." ],
+          effects: [ "Che il sonno ti sia per sempre negato,", "Ogni strada diventi un labirinto,", "Il peso del giudizio ti schiacci,", "La sfortuna sia la tua unica ombra,", "Il tuo nome sia sussurrato con timore," ],
+          closers: [ "finché il debito non sarà pagato.", "nel silenzio eterno della notte.", "senza riparo dal nostro sguardo.", "sigillato nel patto della cenere.", "sotto l'occhio che tutto vede." ]
         }
       };
 
@@ -707,35 +629,34 @@
           owlContainer.classList.add('glow-gold');
           eyeLeft.classList.add('eyes-gold');
           eyeRight.classList.add('eyes-gold');
-          eyeLeft.style.transform = 'scale(1.04)';
-          eyeRight.style.transform = 'scale(1.04)';
         } else if (state === 'curse') {
           owlContainer.classList.add('glow-red');
           eyeLeft.classList.add('eyes-red');
           eyeRight.classList.add('eyes-red');
-          eyeLeft.style.transform = 'scale(1.06)';
-          eyeRight.style.transform = 'scale(1.06)';
         } else {
           owlContainer.classList.add('glow-neutral');
           eyeLeft.classList.add('eyes-dark');
           eyeRight.classList.add('eyes-dark');
-          eyeLeft.style.transform = 'scale(1)';
-          eyeRight.style.transform = 'scale(1)';
         }
       }
 
-      function logLine(text, type) {
+      // TYPEWRITER EFFECT
+      async function logLine(text, type) {
         const div = document.createElement('div');
-        div.className = 'mb-2 transition-all duration-1000 opacity-0 transform translate-y-4 scale-95';
+        div.className = 'mb-2 font-mono text-xs md:text-sm tracking-wide leading-relaxed';
         if (type === 'bless') div.style.color = '#fbbf24';
         else if (type === 'curse') div.style.color = '#ef4444';
         else div.style.color = '#a8a29e';
-        div.textContent = text;
+        
         consoleLog.appendChild(div);
-        requestAnimationFrame(() => {
-          div.classList.remove('opacity-0', 'translate-y-4', 'scale-95');
-          consoleLog.scrollTop = consoleLog.scrollHeight;
-        });
+        consoleLog.scrollTop = consoleLog.scrollHeight;
+
+        // Type letter by letter
+        for (let i = 0; i < text.length; i++) {
+            div.textContent += text[i];
+            // Random delay between keystrokes for realism
+            await wait(15 + Math.random() * 20); 
+        }
       }
 
       function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -754,39 +675,25 @@
       function toggleEarthquake(active) {
         if (prefersReduced) return;
         if (active) {
-          document.body.classList.add('shake-screen');
-          if (navigator.vibrate) navigator.vibrate([90, 30, 90, 30, 90]);
+          // Applying to main container prevents scrollbar jitter on body
+          document.getElementById('mainContainer').classList.add('shake-screen');
+          if (navigator.vibrate) navigator.vibrate([40, 50, 40]);
         } else {
-          document.body.classList.remove('shake-screen');
+          document.getElementById('mainContainer').classList.remove('shake-screen');
         }
       }
 
       function flashOverlay(type) {
         if (!flash) return;
         if (type === 'bless') {
-          flash.style.background = 'radial-gradient(circle at 50% 50%, rgba(251,191,36,0.40) 0%, transparent 70%)';
+          flash.style.background = 'radial-gradient(circle at 50% 50%, rgba(251,191,36,0.30) 0%, transparent 70%)';
           flash.style.mixBlendMode = 'screen';
         } else {
-          flash.style.background = 'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.42) 0%, transparent 70%)';
+          flash.style.background = 'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.35) 0%, transparent 70%)';
           flash.style.mixBlendMode = 'overlay';
         }
         flash.style.opacity = '1';
-        setTimeout(() => { flash.style.opacity = '0'; }, 120);
-        setTimeout(() => { flash.style.opacity = '0'; }, 1400);
-      }
-
-      function nudgeFireIntensity(type) {
-        if (!fireContainer) return;
-        // quick pulse by toggling a transform/opacity on glow layer
-        const glow = fireContainer.querySelector('.fire-glow');
-        if (!glow) return;
-        glow.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
-        glow.style.opacity = type === 'curse' ? '1' : '0.95';
-        glow.style.transform = type === 'curse' ? 'translateY(-10px) scale(1.03)' : 'translateY(-8px) scale(1.02)';
-        setTimeout(() => {
-          glow.style.opacity = '0.85';
-          glow.style.transform = 'translateY(0) scale(1)';
-        }, 850);
+        setTimeout(() => { flash.style.opacity = '0'; }, 100);
       }
 
       async function performRitual(type) {
@@ -800,32 +707,29 @@
         input.disabled = true;
         input.style.opacity = '0.55';
         loadingIndicator.classList.remove('hidden');
+        consoleLog.innerHTML = ''; // Clear log
 
-        // clear log safely
-        consoleLog.textContent = '';
-
-        // set owl + start quake
         setOwlState(type);
         toggleEarthquake(true);
-        nudgeFireIntensity(type);
 
         try {
-          logLine(`INVOCANDO PER: ${name.toUpperCase()}`, 'neutral');
-          await wait(900);
+          await logLine(`INVOCANDO PER: ${name.toUpperCase()}`, 'neutral');
+          await wait(800);
 
           const poemLines = generateAIPoem(type);
           for (let i = 0; i < poemLines.length; i++) {
-            logLine(poemLines[i], type);
+            await logLine(poemLines[i], type);
+            // Flash on last line
             if (i === poemLines.length - 1) flashOverlay(type);
-            await wait(1200);
+            await wait(300); 
           }
 
           await wait(350);
-          logLine(type === 'bless' ? 'COSÌ SIA.' : 'IL PATTO È CHIUSO.', type);
+          await logLine(type === 'bless' ? 'COSÌ SIA.' : 'IL PATTO È CHIUSO.', type);
 
         } finally {
           toggleEarthquake(false);
-          await wait(900);
+          await wait(1500);
           setOwlState('neutral');
           loadingIndicator.classList.add('hidden');
           input.disabled = false;
@@ -835,11 +739,9 @@
         }
       }
 
-      // Buttons
       document.getElementById('btnBless').addEventListener('click', () => performRitual('bless'));
       document.getElementById('btnCurse').addEventListener('click', () => performRitual('curse'));
 
-      // Keyboard
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
