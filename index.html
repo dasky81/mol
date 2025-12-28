@@ -19,10 +19,10 @@
 
   <style>
     :root{
-      --bg: #050202;
-      --fg: #d6d3d1;
-      --red: #7f1d1d;
-      --amber: #a16207;
+      --bg: #020101;
+      --fg: #e7e5e4;
+      --red-glow: rgba(220, 38, 38, 0.6);
+      --gold-glow: rgba(245, 158, 11, 0.6);
     }
 
     html, body { height: 100%; }
@@ -32,62 +32,93 @@
       color: var(--fg);
       overflow-x: hidden;
       padding-bottom: env(safe-area-inset-bottom);
+      /* Subtle noise texture */
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
     }
 
     h1, h2, h3, .ritual-font { font-family: 'Cinzel', serif; }
 
     /* Animations */
     @keyframes fadeInDown {
-      0% { opacity: 0; transform: translateY(-14px); }
+      0% { opacity: 0; transform: translateY(-20px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-    .animate-fade-in-down { animation: fadeInDown 700ms ease-out both; }
+    .animate-enter { animation: fadeInDown 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
     @keyframes flicker {
       0%, 100% { opacity: 1; text-shadow: 0 0 15px rgba(220, 38, 38, 0.6); }
-      50% { opacity: 0.82; text-shadow: 0 0 25px rgba(220, 38, 38, 0.28); }
+      50% { opacity: 0.82; text-shadow: 0 0 30px rgba(220, 38, 38, 0.4); }
     }
-    .flicker-text { animation: flicker 4s infinite alternate; }
+    .flicker-text { animation: flicker 5s infinite alternate; }
 
     .input-ritual {
-      background: rgba(20, 20, 20, 0.75);
-      border: 1px solid #333;
-      transition: all .25s ease;
+      background: rgba(10, 10, 10, 0.6);
+      border: 1px solid #292524;
+      transition: all .3s ease;
+      backdrop-filter: blur(4px);
     }
     .input-ritual:focus {
-      border-color: var(--red);
-      box-shadow: 0 0 20px rgba(127, 29, 29, 0.4);
+      border-color: #7f1d1d;
+      box-shadow: 0 0 25px rgba(127, 29, 29, 0.2);
       outline: none;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.8);
     }
+
+    /* Eye Colors Classes */
+    .eye-base { transition: fill 1.5s ease, filter 1.5s ease; }
+    .eyes-red { fill: #dc2626; filter: drop-shadow(0 0 15px #ef4444); }
+    .eyes-gold { fill: #fbbf24; filter: drop-shadow(0 0 15px #f59e0b); }
+    .eyes-dark { fill: #44403c; filter: drop-shadow(0 0 2px #000); }
+
+    /* Owl Container Glows */
+    .owl-container { transition: all 1.5s ease; }
+    .glow-red { box-shadow: 0 0 80px -5px rgba(220, 38, 38, 0.5); border-color: rgba(127, 29, 29, 0.9); transform: scale(1.05); }
+    .glow-gold { box-shadow: 0 0 80px -5px rgba(245, 158, 11, 0.5); border-color: rgba(180, 83, 9, 0.9); transform: scale(1.05); }
+    .glow-neutral { box-shadow: 0 0 40px -10px rgba(0,0,0,0.8); border-color: #292524; }
 
     /* Terminal */
     .terminal-bg {
-      background-color: #050505;
+      background-color: #080505;
       background-image:
         linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-      background-size: 100% 2px, 3px 100%;
+        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 3px 100%;
+      border-top: 1px solid #292524;
     }
+
+    /* Buttons */
+    .btn-ritual {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid;
+    }
+    .btn-ritual:active { transform: scale(0.96); }
 
     .btn-curse {
-      background: linear-gradient(45deg, #450a0a, #7f1d1d);
-      border: 1px solid #991b1b;
+      background: linear-gradient(160deg, #1a0505 0%, #450a0a 100%);
+      border-color: #7f1d1d;
     }
-    .btn-curse:hover { box-shadow: 0 0 30px rgba(220, 38, 38, 0.6); transform: translateY(-2px); }
+    .btn-curse:hover {
+      box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
+      border-color: #ef4444;
+    }
 
     .btn-bless {
-      background: linear-gradient(45deg, #422006, #854d0e);
-      border: 1px solid #a16207;
+      background: linear-gradient(160deg, #1a1005 0%, #451a03 100%);
+      border-color: #78350f;
     }
-    .btn-bless:hover { box-shadow: 0 0 30px rgba(234, 179, 8, 0.4); transform: translateY(-2px); }
+    .btn-bless:hover {
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+      border-color: #fbbf24;
+    }
 
     /* Fire */
     .fire-container {
       position: fixed;
       bottom: 0; left: 0;
       width: 100%;
-      height: 300px;
+      height: 35vh;
       z-index: 0;
       pointer-events: none;
       mask-image: linear-gradient(to top, black 20%, transparent 100%);
@@ -97,171 +128,149 @@
       position: absolute;
       bottom: -20px;
       width: 40px; height: 40px;
-      background: radial-gradient(circle, rgba(255,80,0,0.8) 0%, rgba(100,0,0,0) 70%);
-      border-radius: 999px;
+      background: radial-gradient(circle, rgba(200,50,0,0.7) 0%, rgba(0,0,0,0) 70%);
+      border-radius: 50%;
       opacity: 0;
-      animation: rise 3s infinite ease-in;
+      animation: rise 4s infinite ease-in;
       filter: blur(8px);
       mix-blend-mode: screen;
     }
     @keyframes rise {
-      0% { opacity: 0; transform: translateY(0) scale(1); }
-      20% { opacity: 0.7; }
-      50% { opacity: 0.9; background: radial-gradient(circle, rgba(255,150,50,0.8) 0%, rgba(255,50,0,0) 70%); }
-      100% { opacity: 0; transform: translateY(-250px) scale(0.2); }
-    }
-
-    /* Owl Animation States */
-    .owl-glow {
-      filter: drop-shadow(0 0 10px rgba(255, 60, 0, 0.3));
-      animation: owlIdle 5s infinite ease-in-out;
-      transform-origin: center;
-    }
-    .owl-active {
-      animation: owlRitual 0.8s infinite alternate !important;
-      filter: drop-shadow(0 0 30px rgba(220, 20, 20, 0.8));
-    }
-    
-    @keyframes owlIdle {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255, 60, 0, 0.2)); }
-      50% { transform: scale(1.02); filter: drop-shadow(0 0 15px rgba(255, 60, 0, 0.4)); }
-    }
-    @keyframes owlRitual {
-      0% { transform: scale(1.05); filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.6)); }
-      100% { transform: scale(1.15); filter: drop-shadow(0 0 50px rgba(255, 0, 0, 1)); }
-    }
-
-    /* Shudder Effect */
-    .shudder { animation: shudder 0.3s infinite; }
-    @keyframes shudder {
-      0% { transform: translate(1px, 1px) rotate(0deg); }
-      10% { transform: translate(-1px, -2px) rotate(-1deg); }
-      20% { transform: translate(-3px, 0px) rotate(1deg); }
-      30% { transform: translate(3px, 2px) rotate(0deg); }
-      40% { transform: translate(1px, -1px) rotate(1deg); }
-      50% { transform: translate(-1px, 2px) rotate(-1deg); }
-      60% { transform: translate(-3px, 1px) rotate(0deg); }
-      70% { transform: translate(3px, 1px) rotate(-1deg); }
-      80% { transform: translate(-1px, -1px) rotate(1deg); }
-      90% { transform: translate(1px, 2px) rotate(0deg); }
-      100% { transform: translate(1px, -2px) rotate(-1deg); }
+      0% { opacity: 0; transform: translateY(0) scale(1) translateX(0); }
+      50% { opacity: 0.6; transform: translateY(-100px) scale(1.5) translateX(10px); }
+      100% { opacity: 0; transform: translateY(-300px) scale(0.5) translateX(-10px); }
     }
 
     /* Loader */
     .loader {
-      border: 3px solid rgba(255,255,255,0.1);
-      border-radius: 999px;
-      border-top: 3px solid #b91c1c;
-      width: 20px;
-      height: 20px;
-      animation: spin 0.8s linear infinite;
+      width: 4px;
+      height: 4px;
+      background-color: currentColor;
+      box-shadow: 0 0 10px currentColor;
+      border-radius: 50%;
+      animation: loaderPulse 1s infinite alternate;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader:before, .loader:after {
+      content: "";
+      position: absolute;
+      width: 4px; height: 4px;
+      background-color: currentColor;
+      border-radius: 50%;
+      animation: loaderPulse 1s infinite alternate;
+    }
+    .loader:before { left: -10px; animation-delay: 0.2s; }
+    .loader:after { right: -10px; animation-delay: 0.4s; }
 
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    @keyframes loaderPulse { 0% { opacity: 0.3; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-red-900 selection:text-white">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-red-900 selection:text-white overflow-hidden">
   
   <!-- FIRE BACKGROUND -->
   <div class="fire-container" id="fireContainer" aria-hidden="true"></div>
 
-  <div class="relative z-10 w-full max-w-lg flex flex-col items-center transition-transform duration-100" id="mainContainer">
+  <div class="relative z-10 w-full max-w-lg flex flex-col items-center transition-transform duration-300" id="mainContainer">
     
     <!-- HEADER / MOLOCH OWL -->
-    <header class="mb-8 text-center animate-fade-in-down">
-      <div id="owlContainer" class="owl-glow inline-block p-6 rounded-full border-2 border-stone-800 bg-stone-950/80 mb-6 shadow-2xl relative overflow-hidden transition-colors duration-1000">
-        <!-- Pulse Glow -->
-        <div class="absolute top-[35%] left-[25%] w-3 h-3 bg-red-600 rounded-full blur-[4px] opacity-80 animate-pulse"></div>
-        <div class="absolute top-[35%] right-[25%] w-3 h-3 bg-red-600 rounded-full blur-[4px] opacity-80 animate-pulse delay-75"></div>
-
+    <!-- Increased size, better spacing, dynamic classes -->
+    <header class="mb-6 text-center animate-enter w-full flex flex-col items-center justify-center">
+      
+      <div id="owlContainer" class="owl-container glow-neutral inline-block p-12 rounded-full border-2 bg-stone-950/90 mb-8 relative overflow-hidden">
+        
         <!-- SVG Icon -->
-        <svg class="w-32 h-32 text-stone-200" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <!-- Horns -->
-          <path d="M20 30 L25 5 L50 15 L75 5 L80 30" stroke-width="3" />
-          <!-- Face -->
-          <path d="M20 30 Q10 50 20 80 L35 95 L65 95 L80 80 Q90 50 80 30" fill="#0c0a09" />
-          <!-- Eyes -->
-          <circle cx="35" cy="40" r="12" stroke-width="2" fill="#1c1917" />
-          <circle cx="65" cy="40" r="12" stroke-width="2" fill="#1c1917" />
-          <circle cx="35" cy="40" r="4" fill="currentColor" class="text-red-600 animate-pulse" />
-          <circle cx="65" cy="40" r="4" fill="currentColor" class="text-red-600 animate-pulse delay-100" />
+        <svg class="w-48 h-48 text-stone-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- Detailed Horns/Ears -->
+          <path d="M20 35 L15 10 L35 25 L50 15 L65 25 L85 10 L80 35" stroke-width="2" />
+          
+          <!-- Head Shape -->
+          <path d="M20 35 C10 55, 15 85, 30 95 L50 100 L70 95 C85 85, 90 55, 80 35" fill="#0c0a09" stroke-width="2"/>
+          
+          <!-- Inner Face Details -->
+          <path d="M35 55 Q50 65 65 55" stroke-opacity="0.3" />
+          <path d="M50 35 L50 50" stroke-opacity="0.3" />
+
+          <!-- Eyes (Dynamic Fill) -->
+          <circle cx="35" cy="45" r="11" stroke="none" fill="#1c1917" />
+          <circle cx="65" cy="45" r="11" stroke="none" fill="#1c1917" />
+          
+          <!-- Pupils (The changing part) -->
+          <circle id="eyeLeft" cx="35" cy="45" r="5" class="eye-base eyes-dark" />
+          <circle id="eyeRight" cx="65" cy="45" r="5" class="eye-base eyes-dark" />
+
           <!-- Beak -->
-          <path d="M50 55 L42 70 L58 70 Z" fill="currentColor" class="text-stone-500" />
-          <!-- Wings -->
-          <path d="M15 60 Q5 80 25 80" stroke-opacity="0.5" />
-          <path d="M85 60 Q95 80 75 80" stroke-opacity="0.5" />
+          <path d="M50 60 L44 75 L56 75 Z" fill="#292524" stroke="none" />
+          
+          <!-- Wing Hints -->
+          <path d="M10 60 Q0 80 20 85" stroke-opacity="0.4" />
+          <path d="M90 60 Q100 80 80 85" stroke-opacity="0.4" />
         </svg>
       </div>
 
-      <h1 class="text-5xl md:text-6xl text-white font-black tracking-widest ritual-font flicker-text mb-2 drop-shadow-lg">MOLOCH</h1>
-      <p class="text-red-900 uppercase tracking-[0.6em] text-xs font-bold border-t border-b border-red-900/30 py-1 inline-block">Cremation of Care</p>
+      <h1 class="text-6xl text-stone-100 font-black tracking-widest ritual-font flicker-text mb-2 drop-shadow-2xl">MOLOCH</h1>
+      <div class="h-px w-32 bg-gradient-to-r from-transparent via-red-900 to-transparent mb-1"></div>
+      <p class="text-stone-500 uppercase tracking-[0.5em] text-[10px] font-bold">Cremation of Care</p>
     </header>
 
-    <main class="w-full bg-stone-950/90 border border-stone-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] rounded-xl overflow-hidden backdrop-blur-md">
+    <main class="w-full bg-[#0a0a0a]/95 border border-stone-800/60 shadow-[0_0_80px_rgba(0,0,0,1)] rounded-xl overflow-hidden backdrop-blur-xl animate-enter" style="animation-delay: 0.1s;">
       
-      <div class="p-8 space-y-6">
-        <div class="text-center pb-2">
-          <p class="text-sm font-serif italic text-stone-400">
-            "Il fuoco attende il nome. Offri il sacrificio per ricevere il giudizio."
-          </p>
-        </div>
-
+      <div class="p-8 space-y-8">
         <!-- Input -->
-        <div class="space-y-3">
-          <div class="relative group">
-            <i data-lucide="feather" class="absolute left-3 top-3.5 w-5 h-5 text-stone-600 group-focus-within:text-red-500 transition-colors" aria-hidden="true"></i>
-            <input
-              type="text"
-              id="targetName"
-              placeholder="Nome del Sacrificio"
-              class="w-full pl-10 pr-4 py-3 text-stone-200 rounded-md input-ritual placeholder-stone-700 font-serif text-xl tracking-wide bg-black/50 text-center uppercase"
-              autocomplete="off"
-            />
-          </div>
+        <div class="relative group">
+          <div class="absolute inset-0 bg-red-900/10 blur-lg rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+          <input
+            type="text"
+            id="targetName"
+            placeholder="NOME DEL SACRIFICIO"
+            class="relative w-full py-4 text-stone-200 rounded-lg input-ritual placeholder-stone-700 font-serif text-xl tracking-[0.1em] bg-black/40 text-center uppercase focus:text-white"
+            autocomplete="off"
+          />
         </div>
-
-        <div class="h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent my-6"></div>
 
         <!-- Buttons -->
-        <div class="grid grid-cols-2 gap-4">
-          <button type="button" id="btnBless" class="group relative overflow-hidden btn-bless text-amber-100 py-6 rounded-lg transition-all duration-300 transform active:scale-95 border border-amber-900/50">
+        <div class="grid grid-cols-2 gap-5">
+          <button type="button" id="btnBless" class="btn-ritual btn-bless group text-amber-100 py-6 rounded-lg">
             <div class="relative z-10 flex flex-col items-center gap-2">
-              <i data-lucide="sun" class="w-5 h-5 text-amber-400 opacity-70 group-hover:rotate-180 transition-transform duration-1000"></i>
-              <span class="ritual-font font-bold tracking-[0.2em] text-xs">BENEDIZIONE</span>
+              <i data-lucide="sun" class="w-6 h-6 text-amber-500/80 group-hover:scale-110 group-hover:rotate-45 transition-transform duration-500"></i>
+              <span class="ritual-font font-bold tracking-[0.2em] text-[10px] uppercase">Benedizione</span>
             </div>
-            <div class="absolute inset-0 bg-amber-600/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            <!-- Shine effect -->
+            <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
           </button>
 
-          <button type="button" id="btnCurse" class="group relative overflow-hidden btn-curse text-red-100 py-6 rounded-lg transition-all duration-300 transform active:scale-95 border border-red-900/50">
+          <button type="button" id="btnCurse" class="btn-ritual btn-curse group text-red-100 py-6 rounded-lg">
             <div class="relative z-10 flex flex-col items-center gap-2">
-              <i data-lucide="flame" class="w-5 h-5 text-red-500 opacity-70 group-hover:scale-125 transition-transform duration-300"></i>
-              <span class="ritual-font font-bold tracking-[0.2em] text-xs">MALEDIZIONE</span>
+              <i data-lucide="flame" class="w-6 h-6 text-red-500/80 group-hover:scale-110 transition-transform duration-300"></i>
+              <span class="ritual-font font-bold tracking-[0.2em] text-[10px] uppercase">Maledizione</span>
             </div>
-            <div class="absolute inset-0 bg-red-900/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            <!-- Shine effect -->
+            <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
           </button>
         </div>
 
         <!-- Loader -->
-        <div id="loadingIndicator" class="hidden flex justify-center py-4">
-          <div class="flex flex-col items-center gap-2 text-red-900/80 font-mono text-[10px] uppercase tracking-widest">
+        <div id="loadingIndicator" class="hidden flex justify-center py-2 h-6">
+          <div class="relative text-stone-500 flex flex-col items-center gap-2">
             <div class="loader"></div>
-            <span id="loadingText" class="animate-pulse">Il Gufo osserva...</span>
+            <span class="text-[9px] uppercase tracking-widest opacity-70">Generazione Oracolo...</span>
           </div>
         </div>
       </div>
 
       <!-- Log / Poetry Output -->
-      <div class="terminal-bg border-t border-stone-800 p-6 font-serif italic text-sm leading-relaxed h-48 overflow-y-auto custom-scrollbar text-center text-stone-400" id="consoleLog">
-        <div class="opacity-50 mb-2">~ Il bosco è silenzioso ~</div>
+      <div class="terminal-bg p-6 font-serif italic text-sm leading-8 h-48 overflow-y-auto custom-scrollbar text-center text-stone-500" id="consoleLog">
+        <div class="opacity-30 mt-12 flex flex-col gap-2">
+          <span>~ Attesa del Sacrificio ~</span>
+        </div>
       </div>
     </main>
 
-    <footer class="mt-12 text-stone-800 text-[10px] font-mono relative z-10 text-center tracking-widest opacity-40">
-      THE GROVE AWAITS
+    <footer class="mt-12 text-stone-800 text-[9px] font-mono relative z-10 text-center tracking-widest opacity-30 uppercase hover:opacity-100 transition-opacity">
+      Grove Council &bull; MMXXIV
     </footer>
   </div>
 
@@ -271,66 +280,153 @@
 
       const consoleLog = document.getElementById('consoleLog');
       const loadingIndicator = document.getElementById('loadingIndicator');
-      const loadingText = document.getElementById('loadingText');
       const input = document.getElementById('targetName');
       const owlContainer = document.getElementById('owlContainer');
-      const mainContainer = document.getElementById('mainContainer');
+      const eyeLeft = document.getElementById('eyeLeft');
+      const eyeRight = document.getElementById('eyeRight');
 
       // ---- FIRE PARTICLES ----
       function createFireParticles() {
         const container = document.getElementById('fireContainer');
-        const count = 45; 
+        const count = 30; 
         const frag = document.createDocumentFragment();
         
         for (let i = 0; i < count; i++) {
           const p = document.createElement('div');
           p.className = 'fire-particle';
           p.style.left = Math.random() * 100 + '%';
-          const size = 20 + Math.random() * 40;
+          const size = 10 + Math.random() * 50;
           p.style.width = size + 'px';
           p.style.height = size + 'px';
           p.style.animationDelay = Math.random() * 5 + 's';
-          p.style.animationDuration = (2 + Math.random() * 3) + 's';
-          
-          // Random red/orange tints
-          const hue = Math.random() > 0.6 ? 'rgba(255,50,0,0.6)' : 'rgba(255,140,0,0.6)';
-          p.style.background = `radial-gradient(circle, ${hue} 0%, rgba(0,0,0,0) 70%)`;
-          
+          p.style.animationDuration = (3 + Math.random() * 4) + 's';
           frag.appendChild(p);
         }
         container.appendChild(frag);
       }
       createFireParticles();
 
-      // ---- RITUAL POETRY ----
-      const poems = {
-        bless: [
-          "Sotto l'ala del Gufo Eterno...",
-          "La notte si apre, l'oro cola.",
-          "Che le radici ti siano scala,",
-          "E la luce guidi il tuo ritorno."
-        ],
-        curse: [
-          "La Carestia divora la cura...",
-          "Nel ventre del bosco, il fuoco ride.",
-          "Ombra su ombra, il passo stride,",
-          "Il Moloch sigilla la tua sventura."
-        ]
+      // ---- AI POETRY GENERATOR LOGIC ----
+      // Simula un'intelligenza artificiale combinando frammenti lessicali
+      // per creare poesie uniche ad ogni rituale.
+      
+      const vocab = {
+        bless: {
+            openers: [
+                "Sotto l'ala del Gufo Eterno,",
+                "Dalle ceneri del bosco sacro,",
+                "Tra i rami antichi che toccano il cielo,",
+                "Quando l'alba bacia la rugiada,",
+                "Oltre il velo della notte oscura,",
+                "Nel respiro della terra madre,"
+            ],
+            actions: [
+                "la luce dorata discende piano.",
+                "il vento porta antiche promesse.",
+                "si apre un sentiero di stelle.",
+                "la linfa scorre nuova e forte.",
+                "gli spiriti benevoli si radunano.",
+                "il fuoco purificatore danza."
+            ],
+            effects: [
+                "Che la fortuna ti sia compagna,",
+                "Ogni passo diventi una danza,",
+                "Il peso del mondo svanisce ora,",
+                "La saggezza guidi il tuo cuore,",
+                "L'abbondanza fiorisca al tuo tocco,",
+                "Ogni ombra diventi rifugio,"
+            ],
+            closers: [
+                "e la pace trovi la tua dimora.",
+                "verso un domani che splende d'oro.",
+                "sotto il manto della grande quercia.",
+                "sigillato nel patto della luce.",
+                "finché il sole non tramonterà più.",
+                "custodito dal sacro fuoco."
+            ]
+        },
+        curse: {
+            openers: [
+                "Nel vuoto dove il Moloch attende,",
+                "Sotto la terra fredda e spoglia,",
+                "Quando la luna si tinge di sangue,",
+                "Dalle profondità del bosco cieco,",
+                "Al rintocco dell'ora tredicesima,",
+                "Dove le radici bevono veleno,"
+            ],
+            actions: [
+                "l'ombra si allunga e ti avvolge.",
+                "il fuoco brucia ogni speranza.",
+                "un gelido vento chiama il tuo nome.",
+                "gli spettri ridono nel buio.",
+                "il sentiero si chiude per sempre.",
+                "la cenere copre ogni traccia."
+            ],
+            effects: [
+                "Che il sonno ti sia per sempre negato,",
+                "Ogni strada diventi un labirinto,",
+                "Il peso del giudizio ti schiacci,",
+                "La sfortuna sia la tua unica ombra,",
+                "Il tuo nome sia sussurrato con timore,",
+                "Ogni porta ti sia sbarrata,"
+            ],
+            closers: [
+                "finché il debito non sarà pagato.",
+                "nel silenzio eterno della notte.",
+                "senza riparo dal nostro sguardo.",
+                "sigillato nel patto della cenere.",
+                "incatenato al destino che hai scelto.",
+                "sotto l'occhio che tutto vede."
+            ]
+        }
       };
+
+      function generateAIPoem(type) {
+        const source = vocab[type];
+        const r = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        return [
+            r(source.openers),
+            r(source.actions),
+            r(source.effects),
+            r(source.closers)
+        ];
+      }
+
+      function setOwlState(state) {
+        // Reset classes
+        owlContainer.classList.remove('glow-neutral', 'glow-gold', 'glow-red');
+        eyeLeft.classList.remove('eyes-dark', 'eyes-gold', 'eyes-red');
+        eyeRight.classList.remove('eyes-dark', 'eyes-gold', 'eyes-red');
+
+        // Apply new state
+        if (state === 'bless') {
+          owlContainer.classList.add('glow-gold');
+          eyeLeft.classList.add('eyes-gold');
+          eyeRight.classList.add('eyes-gold');
+        } else if (state === 'curse') {
+          owlContainer.classList.add('glow-red');
+          eyeLeft.classList.add('eyes-red');
+          eyeRight.classList.add('eyes-red');
+        } else {
+          owlContainer.classList.add('glow-neutral');
+          eyeLeft.classList.add('eyes-dark');
+          eyeRight.classList.add('eyes-dark');
+        }
+      }
 
       function logLine(text, type) {
         const div = document.createElement('div');
-        div.className = "mb-3 transition-opacity duration-1000 opacity-0 transform translate-y-2";
+        div.className = "mb-2 transition-all duration-1000 opacity-0 transform translate-y-4 scale-95";
         
-        if (type === 'bless') div.style.color = "#d97706"; // Amber
-        if (type === 'curse') div.style.color = "#991b1b"; // Red
+        if (type === 'bless') div.style.color = "#fbbf24"; 
+        else if (type === 'curse') div.style.color = "#ef4444"; 
+        else div.style.color = "#a8a29e";
 
         div.textContent = text;
         consoleLog.appendChild(div);
         
-        // Scroll & Animate in
         requestAnimationFrame(() => {
-          div.classList.remove('opacity-0', 'translate-y-2');
+          div.classList.remove('opacity-0', 'translate-y-4', 'scale-95');
           consoleLog.scrollTop = consoleLog.scrollHeight;
         });
       }
@@ -338,14 +434,14 @@
       function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
       function shakeInput(el) {
-        el.classList.add('border-red-800');
+        el.classList.add('border-red-900');
         el.animate([
           { transform: 'translateX(0)' }, 
-          { transform: 'translateX(-5px)' }, 
-          { transform: 'translateX(5px)' }, 
+          { transform: 'translateX(-6px)' }, 
+          { transform: 'translateX(6px)' }, 
           { transform: 'translateX(0)' }
-        ], { duration: 300 });
-        setTimeout(() => el.classList.remove('border-red-800'), 1000);
+        ], { duration: 400 });
+        setTimeout(() => el.classList.remove('border-red-900'), 1000);
       }
 
       async function performRitual(type) {
@@ -355,44 +451,43 @@
           return;
         }
 
-        // 1. UI SETUP
         input.disabled = true;
+        input.style.opacity = "0.5";
         loadingIndicator.classList.remove('hidden');
-        consoleLog.innerHTML = ''; // Clear previous
+        consoleLog.innerHTML = ''; 
         
-        // 2. ACTIVATE OWL
-        owlContainer.classList.remove('owl-glow');
-        owlContainer.classList.add('owl-active');
-        
-        // 3. START RITUAL
-        mainContainer.classList.add('shudder'); // Add slight shake to whole UI
+        // 1. Set Eyes and Glow immediately
+        setOwlState(type);
         
         try {
           // Intro
-          logLine(`Invocando per: ${name.toUpperCase()}...`, 'neutral');
-          await wait(1500);
+          logLine(`INVOCANDO PER: ${name.toUpperCase()}`, 'neutral');
+          // Simula tempo di calcolo AI
+          await wait(1800);
 
-          // Poetry Loop
-          const lines = poems[type];
-          for (let i = 0; i < lines.length; i++) {
-            logLine(lines[i], type);
-            // Flash screen on last line
-            if (i === lines.length - 1) triggerFlash(type);
-            await wait(1200);
+          // Generate Unique Poem
+          const poemLines = generateAIPoem(type);
+
+          for (let i = 0; i < poemLines.length; i++) {
+            logLine(poemLines[i], type);
+            // Flash on last line
+            if (i === poemLines.length - 1) triggerFlash(type);
+            await wait(1400); 
           }
 
-          // Conclusion
+          // Final word
+          await wait(500);
           const final = type === 'bless' ? "COSÌ SIA." : "IL PATTO È CHIUSO.";
           logLine(final, type);
           
         } finally {
-          // 4. CLEANUP
-          await wait(1000);
-          mainContainer.classList.remove('shudder');
-          owlContainer.classList.remove('owl-active');
-          owlContainer.classList.add('owl-glow');
+          await wait(2500);
+          
+          setOwlState('neutral');
+          
           loadingIndicator.classList.add('hidden');
           input.disabled = false;
+          input.style.opacity = "1";
           input.value = '';
           input.focus();
         }
@@ -404,15 +499,25 @@
         flash.style.inset = '0';
         flash.style.zIndex = '50';
         flash.style.pointerEvents = 'none';
-        flash.style.background = type === 'bless' ? 'white' : 'red';
-        flash.style.mixBlendMode = type === 'bless' ? 'overlay' : 'multiply';
-        flash.style.opacity = '0.4';
-        flash.style.transition = 'opacity 1s ease-out';
+        
+        if (type === 'bless') {
+             flash.style.background = 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, transparent 70%)';
+             flash.style.mixBlendMode = 'screen';
+        } else {
+             flash.style.background = 'radial-gradient(circle, rgba(220, 38, 38, 0.4) 0%, transparent 70%)';
+             flash.style.mixBlendMode = 'overlay';
+        }
+
+        flash.style.opacity = '0';
+        flash.style.transition = 'opacity 1.5s ease-out';
         
         document.body.appendChild(flash);
         requestAnimationFrame(() => {
-          flash.style.opacity = '0';
-          setTimeout(() => flash.remove(), 1000);
+          flash.style.opacity = '1';
+          setTimeout(() => {
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 1500);
+          }, 100);
         });
       }
 
