@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#050202" />
   <title>Moloch Grove | Rituale</title>
 
@@ -21,17 +21,13 @@
     :root{
       --bg: #020101;
       --fg: #e7e5e4;
-      --red-glow: rgba(220, 38, 38, 0.6);
-      --gold-glow: rgba(245, 158, 11, 0.6);
     }
 
-    html, body { height: 100%; }
+    html, body { height: 100%; overflow: hidden; /* Prevent scroll on shake */ }
     body {
       font-family: 'Inter', serif;
       background-color: var(--bg);
       color: var(--fg);
-      overflow-x: hidden;
-      padding-bottom: env(safe-area-inset-bottom);
       /* Subtle noise texture */
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
     }
@@ -51,17 +47,43 @@
     }
     .flicker-text { animation: flicker 5s infinite alternate; }
 
+    /* Earthquake Animation */
+    @keyframes earthquake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+      20% { transform: translate(-2px, 0px) rotate(0.5deg); }
+      30% { transform: translate(2px, 1px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(0.5deg); }
+      50% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+      60% { transform: translate(-2px, 1px) rotate(0deg); }
+      70% { transform: translate(2px, 1px) rotate(-0.5deg); }
+      80% { transform: translate(-1px, -1px) rotate(0.5deg); }
+      90% { transform: translate(1px, 1px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-0.5deg); }
+    }
+    
+    .shake-screen {
+      animation: earthquake 0.4s infinite; /* Fast vibration */
+      will-change: transform;
+    }
+
     .input-ritual {
       background: rgba(10, 10, 10, 0.6);
       border: 1px solid #292524;
       transition: all .3s ease;
       backdrop-filter: blur(4px);
+      font-family: 'Cinzel', serif; /* Elegant font applied */
     }
     .input-ritual:focus {
       border-color: #7f1d1d;
       box-shadow: 0 0 25px rgba(127, 29, 29, 0.2);
       outline: none;
       background: rgba(0,0,0,0.8);
+    }
+    .input-ritual::placeholder {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.8em;
+        letter-spacing: normal;
     }
 
     /* Eye Colors Classes */
@@ -72,8 +94,8 @@
 
     /* Owl Container Glows */
     .owl-container { transition: all 1.5s ease; }
-    .glow-red { box-shadow: 0 0 80px -5px rgba(220, 38, 38, 0.5); border-color: rgba(127, 29, 29, 0.9); transform: scale(1.05); }
-    .glow-gold { box-shadow: 0 0 80px -5px rgba(245, 158, 11, 0.5); border-color: rgba(180, 83, 9, 0.9); transform: scale(1.05); }
+    .glow-red { box-shadow: 0 0 80px -5px rgba(220, 38, 38, 0.6); border-color: rgba(127, 29, 29, 1); transform: scale(1.05); }
+    .glow-gold { box-shadow: 0 0 80px -5px rgba(245, 158, 11, 0.6); border-color: rgba(180, 83, 9, 1); transform: scale(1.05); }
     .glow-neutral { box-shadow: 0 0 40px -10px rgba(0,0,0,0.8); border-color: #292524; }
 
     /* Terminal */
@@ -90,10 +112,10 @@
     .btn-ritual {
       position: relative;
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid;
     }
-    .btn-ritual:active { transform: scale(0.96); }
+    .btn-ritual:active { transform: scale(0.92); }
 
     .btn-curse {
       background: linear-gradient(160deg, #1a0505 0%, #450a0a 100%);
@@ -118,7 +140,7 @@
       position: fixed;
       bottom: 0; left: 0;
       width: 100%;
-      height: 35vh;
+      height: 40vh; /* Taller on mobile for better effect */
       z-index: 0;
       pointer-events: none;
       mask-image: linear-gradient(to top, black 20%, transparent 100%);
@@ -169,21 +191,22 @@
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-red-900 selection:text-white overflow-hidden">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-red-900 selection:text-white">
   
   <!-- FIRE BACKGROUND -->
   <div class="fire-container" id="fireContainer" aria-hidden="true"></div>
 
-  <div class="relative z-10 w-full max-w-lg flex flex-col items-center transition-transform duration-300" id="mainContainer">
+  <!-- MAIN WRAPPER: Handles the shake animation -->
+  <div class="relative z-10 w-full max-w-lg flex flex-col items-center transition-transform duration-300 transform-gpu" id="mainContainer">
     
     <!-- HEADER / MOLOCH OWL -->
-    <!-- Increased size, better spacing, dynamic classes -->
-    <header class="mb-6 text-center animate-enter w-full flex flex-col items-center justify-center">
+    <header class="mb-4 md:mb-8 text-center animate-enter w-full flex flex-col items-center justify-center">
       
-      <div id="owlContainer" class="owl-container glow-neutral inline-block p-12 rounded-full border-2 bg-stone-950/90 mb-8 relative overflow-hidden">
+      <!-- Responsive sizing: smaller on mobile, larger on desktop -->
+      <div id="owlContainer" class="owl-container glow-neutral inline-block p-8 md:p-12 rounded-full border-2 bg-stone-950/90 mb-4 md:mb-8 relative overflow-hidden transition-transform duration-500">
         
         <!-- SVG Icon -->
-        <svg class="w-48 h-48 text-stone-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg class="w-32 h-32 md:w-48 md:h-48 text-stone-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <!-- Detailed Horns/Ears -->
           <path d="M20 35 L15 10 L35 25 L50 15 L65 25 L85 10 L80 35" stroke-width="2" />
           
@@ -211,14 +234,14 @@
         </svg>
       </div>
 
-      <h1 class="text-6xl text-stone-100 font-black tracking-widest ritual-font flicker-text mb-2 drop-shadow-2xl">MOLOCH</h1>
-      <div class="h-px w-32 bg-gradient-to-r from-transparent via-red-900 to-transparent mb-1"></div>
+      <h1 class="text-5xl md:text-6xl text-stone-100 font-black tracking-widest ritual-font flicker-text mb-2 drop-shadow-2xl">MOLOCH</h1>
+      <div class="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-red-900 to-transparent mb-1"></div>
       <p class="text-stone-500 uppercase tracking-[0.5em] text-[10px] font-bold">Cremation of Care</p>
     </header>
 
     <main class="w-full bg-[#0a0a0a]/95 border border-stone-800/60 shadow-[0_0_80px_rgba(0,0,0,1)] rounded-xl overflow-hidden backdrop-blur-xl animate-enter" style="animation-delay: 0.1s;">
       
-      <div class="p-8 space-y-8">
+      <div class="p-6 md:p-8 space-y-6 md:space-y-8">
         <!-- Input -->
         <div class="relative group">
           <div class="absolute inset-0 bg-red-900/10 blur-lg rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
@@ -226,26 +249,27 @@
             type="text"
             id="targetName"
             placeholder="NOME DEL SACRIFICIO"
-            class="relative w-full py-4 text-stone-200 rounded-lg input-ritual placeholder-stone-700 font-serif text-xl tracking-[0.1em] bg-black/40 text-center uppercase focus:text-white"
+            class="relative w-full py-4 text-stone-200 rounded-lg input-ritual placeholder-stone-700 text-xl md:text-2xl font-bold tracking-[0.05em] bg-black/40 text-center uppercase focus:text-white"
             autocomplete="off"
+            enterkeyhint="go"
           />
         </div>
 
         <!-- Buttons -->
-        <div class="grid grid-cols-2 gap-5">
-          <button type="button" id="btnBless" class="btn-ritual btn-bless group text-amber-100 py-6 rounded-lg">
+        <div class="grid grid-cols-2 gap-4 md:gap-5">
+          <button type="button" id="btnBless" class="btn-ritual btn-bless group text-amber-100 py-5 md:py-6 rounded-lg active:bg-amber-900/40 touch-manipulation">
             <div class="relative z-10 flex flex-col items-center gap-2">
-              <i data-lucide="sun" class="w-6 h-6 text-amber-500/80 group-hover:scale-110 group-hover:rotate-45 transition-transform duration-500"></i>
-              <span class="ritual-font font-bold tracking-[0.2em] text-[10px] uppercase">Benedizione</span>
+              <i data-lucide="sun" class="w-5 h-5 md:w-6 md:h-6 text-amber-500/80 group-hover:scale-110 group-hover:rotate-45 transition-transform duration-500"></i>
+              <span class="ritual-font font-bold tracking-[0.1em] md:tracking-[0.2em] text-[10px] uppercase">Benedizione</span>
             </div>
             <!-- Shine effect -->
             <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
           </button>
 
-          <button type="button" id="btnCurse" class="btn-ritual btn-curse group text-red-100 py-6 rounded-lg">
+          <button type="button" id="btnCurse" class="btn-ritual btn-curse group text-red-100 py-5 md:py-6 rounded-lg active:bg-red-900/40 touch-manipulation">
             <div class="relative z-10 flex flex-col items-center gap-2">
-              <i data-lucide="flame" class="w-6 h-6 text-red-500/80 group-hover:scale-110 transition-transform duration-300"></i>
-              <span class="ritual-font font-bold tracking-[0.2em] text-[10px] uppercase">Maledizione</span>
+              <i data-lucide="flame" class="w-5 h-5 md:w-6 md:h-6 text-red-500/80 group-hover:scale-110 transition-transform duration-300"></i>
+              <span class="ritual-font font-bold tracking-[0.1em] md:tracking-[0.2em] text-[10px] uppercase">Maledizione</span>
             </div>
             <!-- Shine effect -->
             <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
@@ -262,14 +286,14 @@
       </div>
 
       <!-- Log / Poetry Output -->
-      <div class="terminal-bg p-6 font-serif italic text-sm leading-8 h-48 overflow-y-auto custom-scrollbar text-center text-stone-500" id="consoleLog">
-        <div class="opacity-30 mt-12 flex flex-col gap-2">
+      <div class="terminal-bg p-4 md:p-6 font-serif italic text-sm leading-7 h-40 md:h-48 overflow-y-auto custom-scrollbar text-center text-stone-500 scroll-smooth" id="consoleLog">
+        <div class="opacity-30 mt-10 md:mt-12 flex flex-col gap-2">
           <span>~ Attesa del Sacrificio ~</span>
         </div>
       </div>
     </main>
 
-    <footer class="mt-12 text-stone-800 text-[9px] font-mono relative z-10 text-center tracking-widest opacity-30 uppercase hover:opacity-100 transition-opacity">
+    <footer class="mt-8 md:mt-12 text-stone-800 text-[9px] font-mono relative z-10 text-center tracking-widest opacity-30 uppercase hover:opacity-100 transition-opacity pb-6">
       Grove Council &bull; MMXXIV
     </footer>
   </div>
@@ -282,20 +306,22 @@
       const loadingIndicator = document.getElementById('loadingIndicator');
       const input = document.getElementById('targetName');
       const owlContainer = document.getElementById('owlContainer');
+      const mainContainer = document.getElementById('mainContainer');
       const eyeLeft = document.getElementById('eyeLeft');
       const eyeRight = document.getElementById('eyeRight');
 
       // ---- FIRE PARTICLES ----
       function createFireParticles() {
         const container = document.getElementById('fireContainer');
-        const count = 30; 
+        const isMobile = window.innerWidth < 768;
+        const count = isMobile ? 15 : 30; // Fewer particles on mobile for performance
         const frag = document.createDocumentFragment();
         
         for (let i = 0; i < count; i++) {
           const p = document.createElement('div');
           p.className = 'fire-particle';
           p.style.left = Math.random() * 100 + '%';
-          const size = 10 + Math.random() * 50;
+          const size = 10 + Math.random() * (isMobile ? 30 : 50);
           p.style.width = size + 'px';
           p.style.height = size + 'px';
           p.style.animationDelay = Math.random() * 5 + 's';
@@ -307,9 +333,6 @@
       createFireParticles();
 
       // ---- AI POETRY GENERATOR LOGIC ----
-      // Simula un'intelligenza artificiale combinando frammenti lessicali
-      // per creare poesie uniche ad ogni rituale.
-      
       const vocab = {
         bless: {
             openers: [
@@ -444,6 +467,17 @@
         setTimeout(() => el.classList.remove('border-red-900'), 1000);
       }
 
+      // --- Main Vibration Function ---
+      function toggleEarthquake(active) {
+          if(active) {
+            document.body.classList.add('shake-screen');
+            // Trigger haptic feedback on mobile if available
+            if (navigator.vibrate) navigator.vibrate([100, 30, 100, 30, 100]);
+          } else {
+            document.body.classList.remove('shake-screen');
+          }
+      }
+
       async function performRitual(type) {
         const name = input.value.trim();
         if (!name) {
@@ -458,6 +492,9 @@
         
         // 1. Set Eyes and Glow immediately
         setOwlState(type);
+        
+        // 2. Start Earthquake
+        toggleEarthquake(true);
         
         try {
           // Intro
@@ -481,7 +518,9 @@
           logLine(final, type);
           
         } finally {
-          await wait(2500);
+          // Stop Earthquake a bit before full reset for impact
+          toggleEarthquake(false);
+          await wait(1500);
           
           setOwlState('neutral');
           
